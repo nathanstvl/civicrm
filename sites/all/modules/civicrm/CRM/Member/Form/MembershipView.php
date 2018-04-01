@@ -399,6 +399,37 @@ SELECT r.id, c.id as cid, c.display_name as name, c.job_title as comment,
     }
 
     $this->assign($values);
+	
+	$termElememts = array(
+          'Id',
+          'start_date',
+          'end_date',
+		  'contribution_id',
+    );
+		
+	//get Contribution id
+	$term = array();
+	$contrib_dao = CRM_Core_DAO::executeQuery("SELECT contribution_id FROM civicrm_membership_payment WHERE membership_id ={$values['id']}");
+	while ($contrib_dao->fetch()) {
+		$contrib_id = $contrib_dao->contribution_id;
+	}
+	//Membership period values	
+	$term_no = 1;
+	$term_query = "select * from civicrm_membership_term where membership_id={$values['id']} order by id";
+	$term_dao = CRM_Core_DAO::executeQuery($term_query);
+		while ($term_dao->fetch()) {
+			$row = array();
+			foreach ($termElememts as $field) {
+				$row[$field] = $term_dao->$field;
+				$row['term_no'] = $term_no;
+				$row['contact_id'] = $values['contact_id'];
+				$row['contribution_id'] = $contrib_id;
+			}
+			$term_no++;
+		$term[]= $row;
+		}
+	$this->assign('membership_term', $term);
+		
   }
 
   /**
